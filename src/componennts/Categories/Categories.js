@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState,useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated } from 'react-native';
+import { ScrollView } from 'react-native';
+import animal1 from '../../../assets/animal1.jpg';
 import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { COLORS } from '../../../lib/COLORS';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -9,9 +13,32 @@ const Categories = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [openCamera, setOpenCamera] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('Animals');
   const categories = ['Animals', 'Plants', 'Birds', 'Bugs'];
+  const scaleAnim = useState(new Animated.Value(1))[0]; // For category selection animation
+  const scrollViewRef = useRef();
+  
+  // Animated category selection
+  const animateSelection = () => {
+      Animated.timing(scaleAnim, {
+          toValue: 2,
+          duration: 1000,
+          useNativeDriver: true
+      }).start();
+  };
 
+  const handleCategorySelect = (category) => {
+      setSelectedCategory(category);
+      animateSelection();
+  };
+  const categoryColors = {
+    'Animals': 'maroon',
+    'Plants': 'green',
+    'Birds': 'blue',
+    'Bugs': 'orange',
+  };
+
+  
   // Function to close the camera
 const closeCamera = () => {
   setOpenCamera(false);
@@ -44,25 +71,43 @@ const CameraOverlay = () => {
       console.log(result);
   };
 
-  // Handle category selection
-  const handleCategorySelect = (category) => {
-      setSelectedCategory(category);
+
+
+  const scrollToNextCategory = () => {
+      // Logic to scroll to the next category
+  };
+
+  const scrollToPreviousCategory = () => {
+      // Logic to scroll to the previous category
+  };
+
+  const navigateToCollections = () => {
+      // Logic to navigate to the Collections screen
+      
   };
 
   // Render categories in a scroll view
   const renderCategories = () => {
-      return categories.map((category, index) => (
-          <TouchableOpacity 
-              key={index} 
-              style={[
-                  styles.categoryButton, 
-                  category === selectedCategory ? styles.selectedCategory : null
-              ]}
-              onPress={() => handleCategorySelect(category)}
-          >
-              <Text style={styles.categoryText}>{category}</Text>
-          </TouchableOpacity>
-      ));
+    return categories.map((category, index) => (
+      <TouchableOpacity 
+        key={index} 
+        style={[
+          styles.categoryButton, 
+          { backgroundColor: categoryColors[category] },
+          category === selectedCategory ? styles.selectedCategory : null
+        ]}
+        onPress={() => handleCategorySelect(category)}
+      >
+        <Animated.Text
+                    style={[
+                        styles.categoryText,
+                        category === selectedCategory ? { transform: [{ scale: scaleAnim }] } : null
+                    ]}
+                >
+                    {category}
+                </Animated.Text>
+      </TouchableOpacity>
+    ));
   };
 
   return (
@@ -73,8 +118,8 @@ const CameraOverlay = () => {
             <CameraOverlay />
         </Camera>
         <TouchableOpacity onPress={closeCamera} style={styles.backButton}>
-            <Text style={styles.backButtonText}>Back</Text>
-        </TouchableOpacity>
+  <Icon name="arrow-back" size={30} color="#fff" />
+</TouchableOpacity>
     </View>
           ) : (
               <View style={styles.buttonContainer}>
@@ -87,14 +132,35 @@ const CameraOverlay = () => {
               </View>
           )}
 
-          <ScrollView  
-              
-              showsHorizontalScrollIndicator={false} 
-              style={styles.categoriesScrollView}
-              contentContainerStyle={styles.categoriesContainer}
-          >
-              {renderCategories()}
-          </ScrollView>
+          <ScrollView
+                ref={scrollViewRef}
+                
+                showsHorizontalScrollIndicator={false}
+                style={styles.categoriesScrollView}
+                contentContainerStyle={styles.categoriesContainer}
+            >
+                {renderCategories()}
+             {/*    <TouchableOpacity 
+                style={styles.arrowButtonLeft} 
+                onPress={scrollToPreviousCategory}>
+                <Icon name="chevron-back" size={30} color="#fff" />
+            </TouchableOpacity> */}
+            <TouchableOpacity 
+                style={styles.arrowButtonRight} 
+                onPress={scrollToNextCategory}>
+                <Icon name="chevron-down" size={30} color="#fff" />
+            </TouchableOpacity>
+            </ScrollView>
+
+           
+
+            
+
+            <TouchableOpacity 
+                style={styles.collectionsButton} 
+                onPress={navigateToCollections}>
+                <Icon name="albums" size={30} color="#fff" />
+            </TouchableOpacity>
       </View>
   );
 };
@@ -127,34 +193,88 @@ const styles = StyleSheet.create({
   },
   categoriesScrollView: {
       height: windowHeight / 2,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'white',
+      
   },
   categoriesContainer: {
       alignItems: 'center',
       padding: 10,
   },
   categoryButton: {
-      marginVertical: 15,
-      paddingVertical: 5,
-      paddingHorizontal: 15,
-      backgroundColor: '#007bff',
-      borderRadius: 20,
-      elevation: 2,
-
-  },
-  selectedCategory: {
-      backgroundColor: '#ff4757',
-      transform: [{ scale: 2.1 }],
-      shadowColor: '#ff4757',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.8,
-      shadowRadius: 4,
-  },
-  categoryText: {
-      color: 'white',
-      fontSize: 16,
-  },
+    marginVertical: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 45,
+    backgroundColor: 'dodgerblue',
+    borderRadius: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+},
+selectedCategory: {
+    backgroundColor: COLORS.primary,
+    shadowColor: 'deepskyblue',
+    transform: [{ scale: 2.1 }],
+    shadowColor: '#ff4757',
   
+},
+categoryText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+},
+cameraOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0,0,0,0.3)', // Semi-transparent black overlay
+},
+squareFrame: {
+  width: 250,
+  height: 250,
+  borderWidth: 3,
+  borderColor: '#fff',
+  borderStyle: 'dashed', // Dashed border for a modern look
+  borderRadius: 20, // Slightly rounded corners
+},
+backButton: {
+  position: 'absolute',
+  top: 20,
+  left: 20,
+  padding: 10,
+  borderRadius: 30,
+  backgroundColor: 'rgba(0,0,0,0.5)', // semi-transparent black
+},
+arrowButtonLeft: {
+  position: 'absolute',
+  left: 10,
+  top: windowHeight / 4,
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  borderRadius: 30,
+  padding: 10,
+},
+arrowButtonRight: {
+  position: 'absolute',
+  top:0,
+  right: 30,
+  top: windowHeight / 6,
+  backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  borderRadius: 30,
+  padding: 10,
+},
+collectionsButton: {
+  position: 'absolute',
+  bottom: 20,
+  right: 20,
+  backgroundColor: COLORS.primary,
+  borderRadius: 30,
+  padding: 15,
+},
 });
 
 
