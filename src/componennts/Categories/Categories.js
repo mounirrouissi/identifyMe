@@ -1,100 +1,161 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
-import Carousel from 'react-native-snap-carousel';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ScrollView } from 'react-native';
+import { Camera } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 
-const { width: screenWidth } = Dimensions.get('window');
-
-const CategoryItem = ({ item, index }) => {
-  return (
-    <View style={styles.categoryItem}>
-      <Image source={item.image} style={styles.image} />
-      <Text style={styles.categoryText}>{item.title}</Text>
-    </View>
-  );
-};
+const windowHeight = Dimensions.get('window').height;
 
 const Categories = () => {
-  const categories = [
-    { title: 'Animals', image: require('../../../assets/animal1.jpg') },
-    { title: 'Plants', image: require('../../../assets/animal1.jpg') },
-    // ... Add other categories with their respective images
-  ];
+  const [hasPermission, setHasPermission] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
+  const [openCamera, setOpenCamera] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const categories = ['Animals', 'Plants', 'Birds', 'Bugs'];
 
-  // Carousel refs
-  const carouselRef = React.useRef(null);
+  // Function to close the camera
+const closeCamera = () => {
+  setOpenCamera(false);
+};
 
-  // Function to go to the next category
-  const goNext = () => {
-    carouselRef.current.snapToNext();
+// Camera Overlay Component
+const CameraOverlay = () => {
+  return (
+      <View style={styles.cameraOverlay}>
+          <View style={styles.squareFrame}></View>
+      </View>
+  );
+};
+  // Handle camera permission
+  const handleCameraPermission = async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+      setOpenCamera(status === 'granted');
   };
 
-  // Function to go to the previous category
-  const goPrev = () => {
-    carouselRef.current.snapToPrev();
+  // Handle gallery access
+  const handleGalleryAccess = async () => {
+      let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+      });
+
+      console.log(result);
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (category) => {
+      setSelectedCategory(category);
+  };
+
+  // Render categories in a scroll view
+  const renderCategories = () => {
+      return categories.map((category, index) => (
+          <TouchableOpacity 
+              key={index} 
+              style={[
+                  styles.categoryButton, 
+                  category === selectedCategory ? styles.selectedCategory : null
+              ]}
+              onPress={() => handleCategorySelect(category)}
+          >
+              <Text style={styles.categoryText}>{category}</Text>
+          </TouchableOpacity>
+      ));
   };
 
   return (
-    <View style={styles.container}>
-      <Carousel
-        ref={carouselRef}
-        data={categories}
-        renderItem={CategoryItem}
-        sliderWidth={screenWidth}
-        itemWidth={screenWidth}
-        layout={'default'}
-        firstItem={0}
-      />
-      <TouchableOpacity style={styles.arrowLeft} onPress={goPrev}>
-        <Text style={styles.arrowText}>{'<'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.arrowRight} onPress={goNext}>
-        <Text style={styles.arrowText}>{'>'}</Text>
-      </TouchableOpacity>
+      <View style={styles.container}>
+          {openCamera ? (
+            <View style={styles.cameraContainer}>
+        <Camera style={styles.camera} type={type}>
+            <CameraOverlay />
+        </Camera>
+        <TouchableOpacity onPress={closeCamera} style={styles.backButton}>
+            <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
     </View>
+          ) : (
+              <View style={styles.buttonContainer}>
+                  <TouchableOpacity onPress={handleCameraPermission} style={styles.button}>
+                      <Text style={styles.buttonText}>Open Camera</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleGalleryAccess} style={styles.button}>
+                      <Text style={styles.buttonText}>Open Gallery</Text>
+                  </TouchableOpacity>
+              </View>
+          )}
+
+          <ScrollView  
+              
+              showsHorizontalScrollIndicator={false} 
+              style={styles.categoriesScrollView}
+              contentContainerStyle={styles.categoriesContainer}
+          >
+              {renderCategories()}
+          </ScrollView>
+      </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  categoryItem: {
-    width: screenWidth,
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: '100%',
     height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
+  },
+  cameraContainer: {
+      height: windowHeight / 2,
+  },
+  camera: {
+      flex: 1,
+  },
+  buttonContainer: {
+      height: windowHeight / 2,
+      justifyContent: 'center',
+      alignItems: 'center',
+  },
+  button: {
+      margin: 10,
+      padding: 10,
+      backgroundColor: '#007bff',
+      borderRadius: 5,
+  },
+  buttonText: {
+      color: 'white',
+      fontSize: 16,
+  },
+  categoriesScrollView: {
+      height: windowHeight / 2,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  categoriesContainer: {
+      alignItems: 'center',
+      padding: 10,
+  },
+  categoryButton: {
+      marginVertical: 15,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
+      backgroundColor: '#007bff',
+      borderRadius: 20,
+      elevation: 2,
+
+  },
+  selectedCategory: {
+      backgroundColor: '#ff4757',
+      transform: [{ scale: 2.1 }],
+      shadowColor: '#ff4757',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 4,
   },
   categoryText: {
-    color: '#FFF',
-    fontSize: 24,
-    fontWeight: 'bold',
+      color: 'white',
+      fontSize: 16,
   },
-  arrowLeft: {
-    position: 'absolute',
-    left: 25,
-    zIndex: 1,
-  },
-  arrowRight: {
-    position: 'absolute',
-    right: 25,
-    zIndex: 1,
-  },
-  arrowText: {
-    color: '#FFF',
-    fontSize: 40,
-    fontWeight: 'bold',
-  },
+  
 });
+
 
 export default Categories;
