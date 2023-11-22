@@ -6,14 +6,16 @@ import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../../lib/COLORS';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const windowHeight = Dimensions.get('window').height;
 
 const Categories = () => {
+  const navigation= useNavigation()
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [openCamera, setOpenCamera] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('Animals');
+  const [selectedCategory, setSelectedCategory] = useState();
   const categories = ['Animals', 'Plants', 'Birds', 'Bugs'];
   const scaleAnim = useState(new Animated.Value(1))[0]; // For category selection animation
   const scrollViewRef = useRef();
@@ -85,7 +87,20 @@ const CameraOverlay = () => {
       // Logic to navigate to the Collections screen
       
   };
+  const WINDOW_WIDTH = Dimensions.get('window').height;
 
+  const handleScroll = (event) => {
+    const scrollPosition = event.nativeEvent.contentOffset.y;
+    const categoryHeight = windowHeight / 30; // Adjust based on your category item height
+  
+    const currentCategoryIndex = Math.round(scrollPosition / categoryHeight);
+    const currentCategory = categories[currentCategoryIndex];
+  
+    if (currentCategory !== selectedCategory) {
+        setSelectedCategory(currentCategory);
+        animateSelection();
+    }
+  };
   // Render categories in a scroll view
   const renderCategories = () => {
     return categories.map((category, index) => (
@@ -138,6 +153,8 @@ const CameraOverlay = () => {
                 showsHorizontalScrollIndicator={false}
                 style={styles.categoriesScrollView}
                 contentContainerStyle={styles.categoriesContainer}
+                onScroll={handleScroll} // Add this line
+                scrollEventThrottle={16} // Add this line for better performance
             >
                 {renderCategories()}
              {/*    <TouchableOpacity 
@@ -145,11 +162,12 @@ const CameraOverlay = () => {
                 onPress={scrollToPreviousCategory}>
                 <Icon name="chevron-back" size={30} color="#fff" />
             </TouchableOpacity> */}
-            <TouchableOpacity 
+            <Text 
                 style={styles.arrowButtonRight} 
                 onPress={scrollToNextCategory}>
                 <Icon name="chevron-down" size={30} color="#fff" />
-            </TouchableOpacity>
+            </Text>
+            <Text>More to come ...</Text>
             </ScrollView>
 
            
@@ -158,8 +176,8 @@ const CameraOverlay = () => {
 
             <TouchableOpacity 
                 style={styles.collectionsButton} 
-                onPress={navigateToCollections}>
-                <Icon name="albums" size={30} color="#fff" />
+                onPress={() => navigation.navigate('Collections')}>
+                <Icon name="home" size={30} color="#fff" />
             </TouchableOpacity>
       </View>
   );
@@ -261,7 +279,7 @@ arrowButtonLeft: {
 arrowButtonRight: {
   position: 'absolute',
   top:0,
-  right: 30,
+  left: 30,
   top: windowHeight / 6,
   backgroundColor: 'rgba(0, 0, 0, 0.2)',
   borderRadius: 30,
@@ -269,8 +287,8 @@ arrowButtonRight: {
 },
 collectionsButton: {
   position: 'absolute',
-  bottom: 20,
-  right: 20,
+  bottom: 5,
+  right: 5,
   backgroundColor: COLORS.primary,
   borderRadius: 30,
   padding: 15,
