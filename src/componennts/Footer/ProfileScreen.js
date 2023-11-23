@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { SIZES } from '../../Constants/theme';
+import { SIZES } from '../../../lib/COLORS';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { IconButton, Menu } from 'react-native-paper';
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
@@ -24,34 +23,21 @@ const ProfileScreen = () => {
   const updateUserName = (newName) => {
     setUser({ ...user, name: newName });
   };
-  const handleCVClick = () => {
-    setShowUploadScreen(!showUploadScreen)
-    navigation.navigate('CVScreen');
-  };
+ 
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.profilePic} /> 
       <View style={{flexDirection:'row',alignSelf:'center'}} >
         <Text style={styles.name}>{user.name}</Text>
-         <Icon name="edit" size={25} color="blue" onPress={()=>navigation.navigate("EditProfileScreen", { userName: user.name , updateUserName })} />
+         <Icon name="edit" size={25} color="blue"  />
       </View>
 
       <Text style={styles.email}>{user.email}</Text>
       
 
 
-      <TouchableOpacity style={styles.itemContainer}    onPress={() => handleCVClick(this)} >
-      <Icon name="file" type="font-awesome" size={24} color="#000" />
-      <Text style={styles.section}>My CV</Text>
-      <Icon 
-        name="arrow-right" 
-        type="font-awesome" 
-        size={18} 
-        color="#000" 
-      />
-
-    </TouchableOpacity>
+     
 <TouchableOpacity 
   style={styles.itemContainer}
   onPress={() => navigation.navigate('SettingScreen')}

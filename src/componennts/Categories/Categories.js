@@ -91,7 +91,7 @@ const CameraOverlay = () => {
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
-    const categoryHeight = windowHeight / 30; // Adjust based on your category item height
+    const categoryHeight = windowHeight / 56; // Adjust based on your category item height
   
     const currentCategoryIndex = Math.round(scrollPosition / categoryHeight);
     const currentCategory = categories[currentCategoryIndex];

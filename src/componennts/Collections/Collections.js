@@ -56,25 +56,50 @@ const Collections = () => {
       title: 'Monarch Butterfly',
       description: 'An orange butterfly known for its long migrations.',
       image: require('../../../assets/animal1.jpg'),
+    },{
+      id: '7',
+      title: 'Monarch Butterfly',
+      description: 'An orange butterfly known for its long migrations.',
+      image: require('../../../assets/animal1.jpg'),
     },
     // ... more items
   ];
 
   return (
+    <View style={styles.container}>
+    <Text style={styles.subHeader}>Latest</Text>
     <FlatList
+    horizontal
+      data={dummyData}
+      renderItem={({ item }) => <CollectionItem item={item} />}
+      keyExtractor={item => item.id}
+      contentContainerStyle={styles.listContainer}
+    /> 
+        <Text style={styles.subHeader}>You library</Text>
+    <FlatList
+    
       data={dummyData}
       renderItem={({ item }) => <CollectionItem item={item} />}
       keyExtractor={item => item.id}
       contentContainerStyle={styles.listContainer}
     />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+    container: {
+        backgroundColor: '#F3F4F6', // A light grey background
+        
+      },
   listContainer: {
-    padding: 10,
+    marginHorizontal:10,
+    gap:10,
   },
   itemContainer: {
+    width:'100%',
+    paddingTop:5,
+    paddingVertical:20,
     flexDirection: 'row',
     padding: 10,
     marginBottom: 10,
@@ -102,6 +127,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
   },
+  subHeader: {
+    padding: 20,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  }
 });
 
 export default Collections;
