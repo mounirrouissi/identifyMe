@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from '
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { Ionicons } from '@expo/vector-icons'; 
 import { SafeAreaView, Dimensions } from 'react-native';
-import { Modal } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { Modal, Button } from 'react-native';
+
+
+
 
 const initialLayout = { width: Dimensions.get('window').width };
 
@@ -26,17 +28,31 @@ const ExploreScreen = () => {
     { key: 'tips', title: 'Tips' },
     { key: 'diseases', title: 'Diseases' },
   ]);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [selectedAnimals, setSelectedAnimals] = useState([]);
+
+const handleSelection = (animal) => {
+  setSelectedAnimals(prev => {
+    if(prev.includes(animal)) {
+      return prev.filter(a => a !== animal);
+    } else {
+      return [...prev, animal];
+    }
+  });
+  console.log(selectedAnimals)
+};
 
 
-  const speciesList = ["Birds", "Mammals", "Fish", "Reptiles", "Amphibians"];
-
-    const [showDropdown, setShowDropdown] = useState(false);
-    const [selectedSpecies, setSelectedSpecies] = useState("Select Species");
-  
-    const handleSelectSpecies = (species) => {
-      setSelectedSpecies(species);
-      setShowDropdown(false);
-    };
+const AnimalButton = ({ title, onPress, isSelected }) => (
+    <TouchableOpacity 
+      style={[styles.animalButton, isSelected ? styles.selectedButton : null]}
+      onPress={onPress}>
+      <Text style={[styles.animalButtonText, isSelected ? styles.selectedButtonText : null]}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 
   const renderScene = SceneMap({
     tips: TipsRoute,
@@ -58,32 +74,15 @@ const ExploreScreen = () => {
 
   return (
     <>
-        <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.dropdown} onPress={() => setShowDropdown(true)}>
-        <Text style={styles.headerText}>{selectedSpecies}</Text>
-        <Ionicons name="ios-arrow-down" size={24} color="black" />
-      </TouchableOpacity>
-
-      <Modal
-        transparent={true}
-        visible={showDropdown}
-        onRequestClose={() => setShowDropdown(false)}
-      >
-        <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowDropdown(false)}>
-          <View style={styles.modalContent}>
-            <FlatList
-              data={speciesList}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleSelectSpecies(item)}>
-                  <Text style={styles.itemText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
+      <SafeAreaView style={styles.headerContainer}>
+      <TouchableOpacity style={styles.dropdown} onPress={() => setModalVisible(true)}>
+  <Text style={styles.headerText}>Species</Text>
+  <Ionicons name={modalVisible ? "ios-arrow-up" : "ios-arrow-down"} size={24} color="black" />
+</TouchableOpacity>
+        <TouchableOpacity style={styles.menu}>
+          <Ionicons name="ios-menu" size={24} color="black" />
         </TouchableOpacity>
-      </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
 
       <TabView
         navigationState={{ index, routes }}
@@ -93,6 +92,33 @@ const ExploreScreen = () => {
         renderTabBar={renderTabBar}
         style={styles.container}
       />
+
+<Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(!modalVisible)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+          <TouchableOpacity onPress={() => setModalVisible(!modalVisible)} style={styles.closeButton}>
+        <Ionicons name="close" size={24} color="black" />
+      </TouchableOpacity>
+            <Text style={styles.modalText}>Choose an animal type:</Text>
+            <View style={styles.buttonContainer}>
+              {['Bird', 'Fish', 'Butterfly'].map(animal => (
+                <AnimalButton
+                  key={animal}
+                  title={animal}
+                  onPress={() => handleSelection(animal)}
+                  isSelected={selectedAnimals.includes(animal)}
+                />
+              ))}
+            </View>
+            
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -122,6 +148,61 @@ const styles = StyleSheet.create({
       menu: {
         padding: 8, // Consistent touch area
       },
+
+      animalButton: {
+        
+        justifyContent: 'space-between',
+        backgroundColor: '#007AFF', // Vibrant button color
+        padding: 12, // Bigger button for better touch area
+        borderRadius: 10, // Rounded corners
+        marginVertical: 5, // Margin for spacing
+        
+        shadowColor: 'rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 6,
+        elevation: 3, // Elevation for Android
+        margin: 5, // Add margin for spacing between buttons
+        minWidth: '40%', // Minimum width for each button
+      },
+      buttonContainer: {
+        flexDirection: 'row', // Align buttons in a row
+        flexWrap: 'wrap', // Allow wrapping to the next line
+        justifyContent: 'space-evenly', // Evenly space buttons
+        marginBottom: 20, // Margin at the bottom before the close button
+      },
+      animalButtonText: {
+        color: 'white', // Text color for contrast
+        fontWeight: 'bold', // Bold text
+        textAlign: 'center', // Center text
+      },
+      selectedButton: {
+        backgroundColor: '#34C759', // Different color for selected state
+      },
+      selectedButtonText: {
+        color: '#FFF', // Keep text color consistent for selected state
+      },
+      modalView: {
+        marginTop:'30%',
+        height: '50%',
+        width: '100%', // Adjust width to accommodate two buttons per row
+        backgroundColor: '#F0F0F3', // Modern background color
+        borderRadius: 15, // Rounded corners
+        padding: 20, // Increase padding for better layout
+        alignItems: 'center', // Center align items
+        // ... existing modalView styles
+        backgroundColor: '#F0F0F3', // Modern background color
+        borderRadius: 15, // More rounded corners
+      },
+      modalText: {
+        // ... existing modalText styles
+        color: '#333', // Modern text color
+      },
+
+      closeButton: {
+        alignSelf: 'flex-end', // align the button to the right
+      },
+
   container: {
     marginTop: 10,
   },
