@@ -18,7 +18,9 @@ export default function App() {
   return (
     <NavigationContainer>
           
-      <Tab.Navigator tabBar={props => <FooterScreen {...props} screenOptions={{ headerShown: false }}/>}>
+      <Tab.Navigator tabBar={props => <FooterScreen {...props} screenOptions={{ headerShown: false }}/>}
+      screenOptions={{ headerShown: false }} // This line hides the header
+      >
       <Stack.Screen name="Categories" component={Categories}  />
         <Stack.Screen name="Collections" component={HomeLayout} />
         <Stack.Screen name="FooterScreen" component={FooterScreen} />
