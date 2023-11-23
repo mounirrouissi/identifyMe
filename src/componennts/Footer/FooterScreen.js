@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { StyleSheet } from 'react-native';
 
-const FooterButton = React.memo(({ title, iconName, navigateTo, isActive }) => {
+const FooterButton = React.memo(({ title, iconName, navigateTo, isActive,onNavigate }) => {
   const scaleValue = new Animated.Value(1);
 
   const onPressIn = () => {
@@ -13,6 +13,7 @@ const FooterButton = React.memo(({ title, iconName, navigateTo, isActive }) => {
       toValue: 0.95,
       useNativeDriver: true,
     }).start();
+  
   };
 
   const onPressOut = () => {
@@ -31,6 +32,7 @@ const FooterButton = React.memo(({ title, iconName, navigateTo, isActive }) => {
       onPressOut={onPressOut}
       accessibilityLabel={`Navigate to ${title}`}
       accessibilityRole="button"
+      onPress={()=>onNavigate(navigateTo)}
     >
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
         <Icon name={iconName} size={20} color={color} />
@@ -40,9 +42,16 @@ const FooterButton = React.memo(({ title, iconName, navigateTo, isActive }) => {
   );
 });
 
-const FooterScreen = () => {
+const FooterScreen = ({state}) => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('Home');
+
+  const currentRoute = state.routeNames[state.index];
+
+  // Do not render FooterScreen on Categories screen
+  if (currentRoute === 'Categories') {
+    return null;
+  }
 
   const navigateToScreen = (screenName) => {
     setActiveTab(screenName);
@@ -55,24 +64,28 @@ const FooterScreen = () => {
         title="Home"
         iconName="home"
         navigateTo="HomeScreen"
+        onNavigate={navigateToScreen}
         isActive={activeTab === 'Home'}
       />
       <FooterButton
         title="Discoveries"
         iconName="compass"
         navigateTo="Collections"
+        onNavigate={navigateToScreen}
         isActive={activeTab === 'Discoveries'}
       />
       <FooterButton
         title="Explore"
         iconName="globe"
         navigateTo="ExploreScreen"
+        onNavigate={navigateToScreen}
         isActive={activeTab === 'Explore'}
       />
       <FooterButton
         title="Profile"
         iconName="user"
         navigateTo="ProfileScreen"
+        onNavigate={navigateToScreen}
         isActive={activeTab === 'Profile'}
       />
     </View>
